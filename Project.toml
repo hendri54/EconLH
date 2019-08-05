@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [deps]
 CommonLH = "96c8dc4a-d23f-53b2-b478-aad5d5ab80bd"
+ConfigLH = "17a1d2b7-f0f8-5fc2-a491-2d61ab6c0a52"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
