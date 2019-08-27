@@ -1,5 +1,3 @@
-using EconLH.UtilityFunctionsLH
-using CommonLH.VectorLH
 using Printf
 
 
@@ -50,7 +48,7 @@ function check_one_by_sim(d :: ExtremeValueDecision,  valueV :: Vector{F},
     end
 
     # Count how often each index occurs
-    cntV = VectorLH.count_indices(maxIdxV) ./ nSim;
+    cntV = EconLH.count_indices(maxIdxV) ./ nSim;
     diffV = cntV .- probV;
 
     if any(abs.(diffV) .> 5e-3)

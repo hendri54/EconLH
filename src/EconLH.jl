@@ -2,9 +2,9 @@ module EconLH
 
 using StatsFuns
 
+include("vectorLH.jl")
 include("extreme_value_decision.jl")
-include("production/ProductionFunctionsLH.jl")
-include("utility/UtilityFunctionsLH.jl")
+include("production/productionFunctionsLH.jl")
 include("latex/LatexLH.jl")
 
 """

@@ -21,7 +21,6 @@ println("Testing EconLH")
 
 	include("extreme_value_decision_test.jl")
 	include("ces_test.jl")
-	include("crra_test.jl")
 	include("latex_test.jl")
 end
 
