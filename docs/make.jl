@@ -1,13 +1,11 @@
-using Documenter, EconLH
+using Documenter, EconLH, EconLH.LatexLH
 
 makedocs(
     modules = [EconLH],
-    format = :html,
+    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     checkdocs = :exports,
     sitename = "EconLH.jl",
     pages = Any["index.md"]
 )
 
-deploydocs(
-    repo = "github.com/hendri54/EconLH.jl.git",
-)
+# ---------

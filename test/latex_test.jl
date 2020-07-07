@@ -3,6 +3,36 @@ using EconLH.LatexLH
 
 testDir = joinpath(@__DIR__, "test_files");
 
+function beamer_test()
+	@testset "Beamer" begin
+		figPath = joinpath(testDir, "afqtMeanByQual.pdf");
+		lineV = figure_slide("Title", figPath);
+		@test isa(lineV, Vector{String})
+
+		fPath = joinpath(testDir, "beamer_test.tex");
+		isfile(fPath)  &&  rm(fPath);
+		open(fPath, "w") do io
+			for figName ∈ ("afqtMeanByQual", "fracGradByQual")
+				figPath = joinpath(testDir, figName * ".pdf");
+				write_figure_slide(io, figName, figPath);
+			end
+		end
+		@test isfile(fPath)
+	end
+end
+
+function param_tb_test()
+	@testset "ParameterTable" begin
+		pt = ParameterTable();
+		add_row!(pt, "p1", "param 1", "1.23");
+		# Not robust. Skipping 2 header rows
+		@test nrows(pt.tb) == 3
+		@test pt.tb.bodyV[3] == "p1 & param 1 & 1.23"
+		add_row!(pt, "p2", "param 2", "2.34");
+		write_table(pt, joinpath(testDir, "parameter_table_test.tex"))
+	end
+end
+
 @testset "LatexLH" begin
 	@testset "CellColor" begin
 		x = LatexLH.CellColor("blue", 40);
@@ -59,15 +89,8 @@ testDir = joinpath(@__DIR__, "test_files");
 	end
 
 
-	@testset "ParameterTable" begin
-		pt = ParameterTable();
-		add_row!(pt, "p1", "param 1", "1.23");
-		# Not robust. Skipping 2 header rows
-		@test nrows(pt.tb) == 3
-		@test pt.tb.bodyV[3] == "p1 & param 1 & 1.23"
-		add_row!(pt, "p2", "param 2", "2.34");
-		write_table(pt, joinpath(testDir, "parameter_table_test.tex"))
-	end
+	param_tb_test();
+	beamer_test();
 end
 
 

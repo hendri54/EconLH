@@ -52,7 +52,7 @@ function sim_extreme_value(d :: ExtremeValueDecision{F},  valueV :: Vector{F},
     maxV = zeros(F, nSim);
     countV = zeros(Int, n);
     for i1 = 1 : nSim
-        randV = draw_gumbel_shocks(rng, d.prefScale, n; demeaned = demeaned(d));
+        randV = draw_gumbel_shocks(rng, pref_scale(d), n; demeaned = demeaned(d));
         # Shocks must be added, not subtracted.
         maxV[i1], maxIdx = findmax(valueV .+ randV);
         countV[maxIdx] += 1;
