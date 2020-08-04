@@ -1,4 +1,4 @@
-export ExtremeValueDecision, extreme_value_decision, demeaned, pref_scale, draw_gumbel_shocks
+export ExtremeValueDecision, extreme_value_decision, extreme_value_decision_one, demeaned, pref_scale, draw_gumbel_shocks
 
 const EulerConst = 0.5772;
 
@@ -36,11 +36,17 @@ pref_scale(d :: ExtremeValueDecision{F}) where F = d.prefScale;
 function extreme_value_decision(d :: ExtremeValueDecision{F}, value_iV :: Vector{F}) where
     F <: AbstractFloat
 
+    return extreme_value_decision(value_iV, pref_scale(d); demeaned = demeaned(d));
+end
+
+function extreme_value_decision(value_iV :: Vector{F}, prefScale :: F; 
+   demeaned :: Bool = true) where F <: AbstractFloat
+
     nTypes = length(value_iV);
     probV = ones(F, nTypes);
     valueV = copy(value_iV);
-    if !demeaned(d)
-        valueV .+= (pref_scale(d) * F(EulerConst));
+    if !demeaned
+        valueV .+= (prefScale * F(EulerConst));
     end
     return probV, valueV
 end
@@ -62,38 +68,85 @@ TEST
    by simulation in extreme_value_decision_test
 """
 function extreme_value_decision(d :: ExtremeValueDecision{F}, 
-   value_ixM :: Matrix{F}) where  F <: AbstractFloat
+   value_ixM :: AbstractMatrix{F}) where  F <: AbstractFloat
 
-    nTypes, nx = size(value_ixM);
+   return extreme_value_decision(value_ixM, pref_scale(d);
+      demeaned = demeaned(d))
+end
 
-    # Decision probability is log(sum(exp(V / prefScale)))
-    # This needs to be nicely scaled to avoid overflow
-    vMax_iV = maximum(value_ixM ./ pref_scale(d), dims = 2) .- 4.0;
-    # The following line is expensive
-    exp_ixM = exp.(value_ixM ./ pref_scale(d) .- vMax_iV);
+function extreme_value_decision(value_ixM :: AbstractMatrix{F}, prefScale :: F; 
+   demeaned :: Bool = true) where F <: AbstractFloat
 
-    # For each type: sum over alternatives
-    expSum_iV = sum(exp_ixM, dims = 2);
+   nTypes, nx = size(value_ixM);
+   prob_ixM = similar(value_ixM);
+   eVal_iV = Vector{F}(undef, nTypes);
+   for j = 1 : nTypes
+      prob_ixM[j,:], eVal_iV[j] = extreme_value_decision_one(vec(value_ixM[j,:]),
+         prefScale; demeaned = demeaned);
+   end
 
-    # Prob of each choice
-    prob_ixM = exp_ixM ./ expSum_iV;
+   #  # Decision probability is log(sum(exp(V / prefScale)))
+   #  # This needs to be nicely scaled to avoid overflow
+   #  vMax_iV = maximum(value_ixM ./ prefScale, dims = 2) .- 4.0;
+   #  # The following line is expensive
+   #  exp_ixM = exp.(value_ixM ./ prefScale .- vMax_iV);
 
-    # Expected value
-    eVal_iV = vec(pref_scale(d) .* (vMax_iV + log.(expSum_iV)));
+   #  # For each type: sum over alternatives
+   #  expSum_iV = sum(exp_ixM, dims = 2);
 
-    if !demeaned(d)
-      eVal_iV .+= pref_scale(d) * EulerConst;
-    end
+   #  # Prob of each choice
+   #  prob_ixM = exp_ixM ./ expSum_iV;
 
-    if d.dbg
-       @assert isreal(exp_ixM)
-       @assert size(exp_ixM) == size(value_ixM)
-       @assert size(prob_ixM) == size(value_ixM)
-       @assert size(eVal_iV) == (nTypes,)
-    end
+   #  # Expected value
+   #  eVal_iV = vec(prefScale .* (vMax_iV + log.(expSum_iV)));
+
+   #  if !demeaned
+   #    eVal_iV .+= prefScale * F(EulerConst);
+   #  end
+
+   #  if d.dbg
+   #     @assert isreal(exp_ixM)
+   #     @assert size(exp_ixM) == size(value_ixM)
+   #     @assert size(prob_ixM) == size(value_ixM)
+   #     @assert size(eVal_iV) == (nTypes,)
+   #  end
 
     return prob_ixM, eVal_iV
 end
+
+
+"""
+	$(SIGNATURES)
+
+Extreme value decision for one individual.
+
+This is probably not efficient. See efficient implementation for `logsumexp` in `StatsFuns.jl`. But here we also need the scaled exp(valueV) directly for the probabilities.
+"""
+function extreme_value_decision_one(valueV :: AbstractVector{F}, prefScale :: F; 
+   demeaned :: Bool = true) where F <: AbstractFloat
+
+   # Decision probability is log(sum(exp(V / prefScale)))
+   # This needs to be nicely scaled to avoid overflow
+   vMax = maximum(valueV) ./ prefScale .- F(4.0);
+   # The following line is expensive
+   expV = exp.(valueV ./ prefScale .- vMax);
+
+   # For each type: sum over alternatives
+   expSum = sum(expV);
+
+   # Prob of each choice
+   probV = expV ./ expSum;
+
+   # Expected value
+   eVal = prefScale * (vMax + log(expSum));
+
+   if !demeaned
+      eVal += prefScale * F(EulerConst);
+   end
+
+   return probV, eVal
+end
+
 
 # """
 # Same with vector input (b/c a vector is not the same as an array with one row)
