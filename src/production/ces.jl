@@ -1,15 +1,3 @@
-"""
-CES aggregator of the form
-
-Y = A * [sum of (alpha X) ^ rho] ^ (1/rho)
-Q = sum of (alpha X) ^ rho
-
-Accommodates matrix inputs (T x N)
-
-Best to store AV in the object
-- little cost in terms of efficiency
-- consistency ensured
-"""
 
 ## Type definition
 # should be subtype of production function +++
@@ -25,9 +13,20 @@ mutable struct CES
   rho :: Float64
   qV :: Vector{Float64}
 
-  # ----  Constructor
-  # enforces consistency
-  function CES(sElast :: Float64, aV :: Vector{Float64}, prodV :: Vector{Float64})
+
+ """
+  CES aggregator of the form
+  
+  Y = A * [sum of (alpha X) ^ rho] ^ (1/rho)
+  Q = sum of (alpha X) ^ rho
+  
+  Accommodates matrix inputs (T x N)
+  
+  Best to store AV in the object
+  - little cost in terms of efficiency
+  - consistency ensured
+"""
+function CES(sElast :: Float64, aV :: Vector{Float64}, prodV :: Vector{Float64})
     fS = new();
     set_params(fS, substElast = sElast, alphaV = aV, AV = prodV);
     return fS

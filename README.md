@@ -1,10 +1,10 @@
 # EconLH.jl
 
-![Lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)<!--
-![Lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
-![Lifecycle](https://img.shields.io/badge/lifecycle-stable-green.svg)
-![Lifecycle](https://img.shields.io/badge/lifecycle-retired-orange.svg)
-![Lifecycle](https://img.shields.io/badge/lifecycle-archived-red.svg)
-![Lifecycle](https://img.shields.io/badge/lifecycle-dormant-blue.svg) -->
-[![Build Status](https://travis-ci.com/hendri54/EconLH.jl.svg?branch=master)](https://travis-ci.com/hendri54/EconLH.jl)
-[![codecov.io](http://codecov.io/github/hendri54/EconLH.jl/coverage.svg?branch=master)](http://codecov.io/github/hendri54/EconLH.jl?branch=master)
+General purpose, economics related functions:
+
+* Discrete choice with Gumbel shocks
+* Latex related helpers
+
+[Documentation](lhendricks.org/julia/index.html)
+
+# -----------

@@ -1,12 +1,15 @@
 module EconLH
 
+# ToDo
+# - Factor out production functions into a separate module
+
 using DocStringExtensions
 using Distributions, Random, StatsFuns
 
 include("vectorLH.jl")
 include("extreme_value_decision.jl")
 include("production/productionFunctionsLH.jl")
-include("latex/LatexLH.jl")
+# include("latex/LatexLH.jl")
 
 
 """

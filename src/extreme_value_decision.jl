@@ -28,7 +28,18 @@ function ExtremeValueDecision(prefScale :: F, dbg :: Bool = false) where
     return ExtremeValueDecision(prefScale, true, dbg)
 end
 
+"""
+	$(SIGNATURES)
+
+Use demeaned Gumbel preference shocks?
+"""
 demeaned(d :: ExtremeValueDecision{F}) where F = d.demeaned;
+
+"""
+	$(SIGNATURES)
+
+Returns the scale parameter of the Gumbel preference shocks.
+"""
 pref_scale(d :: ExtremeValueDecision{F}) where F = d.prefScale;
 
 
@@ -59,13 +70,13 @@ Decision: Multiple alternatives.
 Always returns a vector for `eVal_iV` (even with one agent).
    
 OUT
-   prob_ixM
+   `prob_ixM`
       probability of choosing each option
-   eVal_iV
+   `eVal_iV`
       expected value for each type
 
 TEST
-   by simulation in extreme_value_decision_test
+   by simulation in `extreme_value_decision_test`
 """
 function extreme_value_decision(d :: ExtremeValueDecision{F}, 
    value_ixM :: AbstractMatrix{F}) where  F <: AbstractFloat
