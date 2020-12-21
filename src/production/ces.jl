@@ -22,6 +22,9 @@ mutable struct CES{F1} <: AbstractProductionFunction{F1}
   AV :: Vector{F1}
 end
 
+Base.show(io :: IO,  fS :: CES{F1}) where F1 = 
+  print(io, "CES production function with $(n_inputs(fS)) inputs and elasticity $(subst_elast(fS))");
+
 """
 	$(SIGNATURES)
 
@@ -100,14 +103,17 @@ end
 
 
 # # ----  return rho from subst elast
-function curvature(fS :: CES{F1}) where F1 <: AbstractFloat
-  return one(F1) / fS.substElast - one(F1);
-end
+curvature(fS :: CES{F1}) where F1 <: AbstractFloat = 
+  curvature_from_subst_elast(fS.substElast);
 
+curvature_from_subst_elast(substElast :: F1) where F1 <: Real = 
+  one(F1) / substElast - one(F1);
 
 ## -------  Returns sum(alpha * x ^ rho) ^ (1/rho)
 # With rho = 0 (Cobb-Douglas) this returns 1.0.
-function ces_q(alphaV :: Vector{F1}, xM :: Matrix{F1}, rho :: F1) where F1 <: AbstractFloat
+function ces_q(alphaV :: AbstractVector{F1}, xM :: AbstractMatrix{F1}, 
+  rho :: F1) where F1 <: AbstractFloat
+
   T = size(xM, 1);
   qV = zeros(F1, T);
   for t = 1 : T
@@ -123,13 +129,32 @@ end
 
 Output given inputs. If substitution elasticity is close to 1, switch to Cobb-Douglas.
 """
-function output(fS :: CES{F1}, xM :: Matrix{F1}) where F1 <: AbstractFloat
-  qV = ces_q(fS.alphaV, xM, curvature(fS));
+output(fS :: CES{F1}, xM :: AbstractMatrix{F1}) where F1 <: AbstractFloat = 
+  productivities(fS) .* ces_output(xM, fS.alphaV, subst_elast(fS));
+#   qV = ces_q(fS.alphaV, xM, curvature(fS));
+#   # This does not overflow when curvature = 1.0
+#   yV = productivities(fS) .* (qV .^ (one(F1) / curvature(fS)));
+#   if switch_cobb_douglas(subst_elast(fS), yV)
+#     # Handle numerical overflow by switching to Cobb-Douglas
+#     yV = productivities(fS) .* output_cobb_douglas(xM, fS.alphaV);
+#   end
+#   return yV
+# end
+
+
+"""
+	$(SIGNATURES)
+
+Output from CES production function with weights `alphaV` and substitution elasticity `substElast`.
+"""
+function ces_output(xM :: AbstractMatrix{F1}, alphaV :: AbstractVector{F1}, substElast :: F1) where F1 <: Real
+
+  curv = curvature_from_subst_elast(substElast);
   # This does not overflow when curvature = 1.0
-  yV = productivities(fS) .* (qV .^ (one(F1) / curvature(fS)));
-  if switch_cobb_douglas(subst_elast(fS), yV)
+  yV = ces_q(alphaV, xM, curv) .^ (one(F1) / curv);
+  if switch_cobb_douglas(substElast, yV)
     # Handle numerical overflow by switching to Cobb-Douglas
-    yV = productivities(fS) .* output_cobb_douglas(xM, fS.alphaV);
+    yV = output_cobb_douglas(xM, alphaV);
   end
   return yV
 end
@@ -151,24 +176,45 @@ end
 
 Marginal products (TxN).
 """
-function mproducts(fS :: CES{F1}, xM :: Matrix{F1}) where F1 <: AbstractFloat
+mproducts(fS :: CES{F1}, xM :: AbstractMatrix{F1}) where F1 <: AbstractFloat = 
+  productivities(fS) .* ces_mproducts(xM, fS.alphaV, subst_elast(fS));
 
-  T = length(fS.AV)
-  N = length(fS.alphaV);
-  rho = curvature(fS);
+#   T = length(fS.AV)
+#   N = length(fS.alphaV);
+#   rho = curvature(fS);
+#   # qV is T x 1
+#   qV = ces_q(fS.alphaV, xM, rho);
+#   aqV = fS.AV .* (qV .^ (one(F1) / rho - one(F1)));
+#   # mpM = similar(xM);
+#   # for j = 1 : N
+#   #   mpM[:,j] = aqV .* (fS.alphaV[j] .^ rho) .* (xM[:,j] .^ (rho - 1));
+#   # end
+#   if switch_cobb_douglas(subst_elast(fS), aqV)
+#     mpM = fS.AV .* mproducts_cobb_douglas(xM, fS.alphaV);
+#   else
+#     mpM = aqV .* (xM .^ (rho-one(F1))) .* fS.alphaV';
+#   end
+#   # @assert (all(abs.(mp2M - mpM) .< 1e-5))
+#   return mpM
+# end
+
+"""
+	$(SIGNATURES)
+
+CES marginal products (TxN).
+"""
+function ces_mproducts(xM :: AbstractMatrix{F1}, alphaV :: AbstractVector{F1}, substElast :: F1) where F1 <: Real
+
+  T, N = size(xM);
+  rho = curvature_from_subst_elast(substElast);
   # qV is T x 1
-  qV = ces_q(fS.alphaV, xM, rho);
-  aqV = fS.AV .* (qV .^ (one(F1) / rho - one(F1)));
-  # mpM = similar(xM);
-  # for j = 1 : N
-  #   mpM[:,j] = aqV .* (fS.alphaV[j] .^ rho) .* (xM[:,j] .^ (rho - 1));
-  # end
-  if switch_cobb_douglas(subst_elast(fS), aqV)
-    mpM = fS.AV .* mproducts_cobb_douglas(xM, fS.alphaV);
+  qV = ces_q(alphaV, xM, rho);
+  aqV = (qV .^ (one(F1) / rho - one(F1)));
+  if switch_cobb_douglas(substElast, aqV)
+    mpM = mproducts_cobb_douglas(xM, alphaV);
   else
-    mpM = aqV .* (xM .^ (rho-one(F1))) .* fS.alphaV';
+    mpM = aqV .* (xM .^ (rho-one(F1))) .* alphaV';
   end
-  # @assert (all(abs.(mp2M - mpM) .< 1e-5))
   return mpM
 end
 
@@ -176,7 +222,11 @@ end
 function make_test_ces(T, n, substElast)
   alphaV = collect(range(1.0, 2.0, length = n));
   alphaV = alphaV ./ sum(alphaV);
-  AV = collect(LinRange(0.5, 9.0, T));
+  if T == 1
+    AV = [0.5];
+  else
+    AV = collect(LinRange(0.5, 9.0, T));
+  end
 
   fS = CES(substElast, alphaV, AV);
   @assert validate_prod_fct(fS)

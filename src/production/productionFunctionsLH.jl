@@ -2,8 +2,8 @@ module ProductionFunctionsLH
 
 using DocStringExtensions
 
-export validate_prod_fct, n_inputs, productivities, constant_returns
-export CES, output, mproducts
+export output, mproducts, validate_prod_fct, n_inputs, productivities, constant_returns
+export CES, ces_output, ces_mproducts
 
 abstract type AbstractProductionFunction{F1<: AbstractFloat} end
 

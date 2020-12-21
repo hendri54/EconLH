@@ -1,7 +1,7 @@
 name = "EconLH"
 uuid = "e3939c25-9e30-5b59-80eb-f399ae42cd76"
 authors = ["hendri54 <hendricksl@protonmail.com>"]
-version = "0.1.6"
+version = "0.1.7"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"

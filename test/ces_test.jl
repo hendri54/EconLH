@@ -14,8 +14,6 @@ function elast_close_to_one_test()
     y1V[j] = yV[1]
   end
   @test all(abs.(diff(y1V)) .< 0.01)
-
-  @show y1V
 end
 
 @testset "CES" begin

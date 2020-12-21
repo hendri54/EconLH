@@ -22,14 +22,16 @@ CurrentModule = EconLH.ProductionFunctionsLH
 ```
 
 ```@docs
-CES
 output
 mproducts
 n_inputs
-subst_elast
 productivities
 constant_returns
 validate_prod_fct
+CES
+ces_output
+ces_mproducts
+subst_elast
 ```
 
 -------------
