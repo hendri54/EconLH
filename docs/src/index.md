@@ -15,4 +15,21 @@ extreme_value_decision_one
 draw_gumbel_shocks
 ```
 
+# Production Functions
+
+```@meta
+CurrentModule = EconLH.ProductionFunctionsLH
+```
+
+```@docs
+CES
+output
+mproducts
+n_inputs
+subst_elast
+productivities
+constant_returns
+validate_prod_fct
+```
+
 -------------

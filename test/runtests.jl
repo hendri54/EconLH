@@ -2,10 +2,7 @@ using Distributions, Random, Test
 using EconLH.ProductionFunctionsLH
 using EconLH
 
-println("Testing EconLH")
-
-
-@testset "econLH" begin
+function pv_test()
 	@testset "present value" begin
 		R = 1.05;
 		T = 3;
@@ -18,8 +15,12 @@ println("Testing EconLH")
 		@test isa(pv, Float64)
 		@test pv ≈ f(1) + f(2) ./ R + f(3) ./ R^2
 	end
+end
 
-	include("extreme_value_decision_test.jl")
+@testset "econLH" begin
+	pv_test();
+	include("extreme_value_decision_test.jl");
+	include("prod_fct_test.jl");
 	include("ces_test.jl")
 end
 
