@@ -44,13 +44,13 @@ pref_scale(d :: ExtremeValueDecision{F}) where F = d.prefScale;
 
 
 ## Decision: One alternative
-function extreme_value_decision(d :: ExtremeValueDecision{F}, value_iV :: Vector{F}) where
-    F <: AbstractFloat
+function extreme_value_decision(d :: ExtremeValueDecision{F}, 
+   value_iV :: AbstractVector{F}) where F <: AbstractFloat
 
     return extreme_value_decision(value_iV, pref_scale(d); demeaned = demeaned(d));
 end
 
-function extreme_value_decision(value_iV :: Vector{F}, prefScale :: F; 
+function extreme_value_decision(value_iV :: AbstractVector{F}, prefScale :: F; 
    demeaned :: Bool = true) where F <: AbstractFloat
 
     nTypes = length(value_iV);
@@ -140,13 +140,13 @@ function extreme_value_decision_one(valueV :: AbstractVector{F}, prefScale :: F;
    # This needs to be nicely scaled to avoid overflow
    vMax = maximum(valueV) ./ prefScale .- F(4.0);
    # The following line is expensive
-   expV = exp.(valueV ./ prefScale .- vMax);
+   probV = exp.(valueV ./ prefScale .- vMax);
 
    # For each type: sum over alternatives
-   expSum = sum(expV);
+   expSum = sum(probV);
 
    # Prob of each choice
-   probV = expV ./ expSum;
+   probV ./= expSum;
 
    # Expected value
    eVal = prefScale * (vMax + log(expSum));

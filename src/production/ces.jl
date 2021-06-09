@@ -118,9 +118,14 @@ function ces_q(alphaV :: AbstractVector{F1}, xM :: AbstractMatrix{F1},
   qV = zeros(F1, T);
   for t = 1 : T
       # Careful here: alphaV * xM could become a matrix
-      qV[t] = sum(alphaV .* (xM[t,:] .^ rho));
+      @views qV[t] = ces_q(alphaV, xM[t,:], rho);
   end
   return qV
+end
+
+# One set of inputs.
+function ces_q(alphaV :: AbstractVector{F1}, xV :: AbstractVector{F1}, rho :: F1) where F1
+  return sum(alphaV .* (xV .^ rho));
 end
 
 
@@ -145,12 +150,17 @@ output(fS :: CES{F1}, xM :: AbstractMatrix{F1}) where F1 <: AbstractFloat =
 """
 	$(SIGNATURES)
 
-Output from CES production function with weights `alphaV` and substitution elasticity `substElast`.
+Output from CES production function with weights `alphaV` and substitution elasticity `substElast`. Returns a scalar if xM is a Vector, but not if it is a Matrix with 1 row.
+
+# Arguments
+
+- xM: Can be a `Matrix` where each row is a set of inputs or a `Vector` for a single set of inputs.
 """
-function ces_output(xM :: AbstractMatrix{F1}, alphaV :: AbstractVector{F1}, substElast :: F1) where F1 <: Real
+function ces_output(xM :: AbstractArray{F1}, alphaV :: AbstractVector{F1}, substElast :: F1) where F1 <: Real
 
   curv = curvature_from_subst_elast(substElast);
   # This does not overflow when curvature = 1.0
+  # If elasticity is close to 1, some yV are Inf. This is checked in the next step.
   yV = ces_q(alphaV, xM, curv) .^ (one(F1) / curv);
   if switch_cobb_douglas(substElast, yV)
     # Handle numerical overflow by switching to Cobb-Douglas
@@ -158,6 +168,7 @@ function ces_output(xM :: AbstractMatrix{F1}, alphaV :: AbstractVector{F1}, subs
   end
   return yV
 end
+
 
 # Decide whether Cobb-Douglas needs to be used
 function switch_cobb_douglas(substElast, xV)
@@ -176,7 +187,7 @@ end
 
 Marginal products (TxN).
 """
-mproducts(fS :: CES{F1}, xM :: AbstractMatrix{F1}) where F1 <: AbstractFloat = 
+mproducts(fS :: CES{F1}, xM :: AbstractMatrix{F1}) where F1 <: Real = 
   productivities(fS) .* ces_mproducts(xM, fS.alphaV, subst_elast(fS));
 
 #   T = length(fS.AV)

@@ -44,6 +44,23 @@ function prod_fct_test(fS)
 end
 
 
+function output_direct_test(substElast)
+    @testset "Direct output computation" begin
+        n = 3;
+        T = 4;
+        alphaV = (1 : n) ./ n;
+        xM = (1:T) .+ (1:n)' .+ 0.5;
+        yV = ces_output(xM, alphaV, substElast);
+        @test all(yV .> 0.0);
+        @test size(yV) == (T,);
+
+        # One set of inputs
+        y = ces_output(xM[2,:], alphaV, substElast);
+        @test isapprox(y, yV[2]);
+    end
+end
+
+
 @testset "Production Functions" begin
     n = 3;
     substElastV = (0.5, 0.99, 1.0, 1.01, 3.0);
@@ -52,8 +69,10 @@ end
         for substElast in substElastV
             fS = pf.make_test_ces(T, n, substElast);
             prod_fct_test(fS);
+            output_direct_test(substElast);
         end
     end
+
 end
 
 # -------------

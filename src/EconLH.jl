@@ -6,10 +6,9 @@ module EconLH
 using DocStringExtensions
 using Distributions, Random, StatsFuns
 
-include("vectorLH.jl")
-include("extreme_value_decision.jl")
-include("production/productionFunctionsLH.jl")
-# include("latex/LatexLH.jl")
+include("vectorLH.jl");
+include("extreme_value_decision.jl");
+include("production/productionFunctionsLH.jl");
 
 
 """

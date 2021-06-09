@@ -4,6 +4,7 @@ using DocStringExtensions
 
 export output, mproducts, validate_prod_fct, n_inputs, productivities, constant_returns
 export CES, ces_output, ces_mproducts
+export output_cobb_douglas
 
 abstract type AbstractProductionFunction{F1<: AbstractFloat} end
 
