@@ -45,13 +45,13 @@ pref_scale(d :: ExtremeValueDecision{F}) where F = d.prefScale;
 
 ## Decision: One alternative
 function extreme_value_decision(d :: ExtremeValueDecision{F}, 
-   value_iV :: AbstractVector{F}) where F <: AbstractFloat
+   value_iV :: AbstractVector{F}) where F
 
     return extreme_value_decision(value_iV, pref_scale(d); demeaned = demeaned(d));
 end
 
 function extreme_value_decision(value_iV :: AbstractVector{F}, prefScale :: F; 
-   demeaned :: Bool = true) where F <: AbstractFloat
+   demeaned :: Bool = true) where F
 
     nTypes = length(value_iV);
     probV = ones(F, nTypes);
@@ -79,14 +79,14 @@ TEST
    by simulation in `extreme_value_decision_test`
 """
 function extreme_value_decision(d :: ExtremeValueDecision{F}, 
-   value_ixM :: AbstractMatrix{F}) where  F <: AbstractFloat
+   value_ixM :: AbstractMatrix{F}) where  F <: Real
 
    return extreme_value_decision(value_ixM, pref_scale(d);
       demeaned = demeaned(d))
 end
 
 function extreme_value_decision(value_ixM :: AbstractMatrix{F}, prefScale :: F; 
-   demeaned :: Bool = true) where F <: AbstractFloat
+   demeaned :: Bool = true) where F <: Real
 
    nTypes, nx = size(value_ixM);
    prob_ixM = similar(value_ixM);
@@ -95,34 +95,24 @@ function extreme_value_decision(value_ixM :: AbstractMatrix{F}, prefScale :: F;
       prob_ixM[j,:], eVal_iV[j] = extreme_value_decision_one(vec(value_ixM[j,:]),
          prefScale; demeaned = demeaned);
    end
-
-   #  # Decision probability is log(sum(exp(V / prefScale)))
-   #  # This needs to be nicely scaled to avoid overflow
-   #  vMax_iV = maximum(value_ixM ./ prefScale, dims = 2) .- 4.0;
-   #  # The following line is expensive
-   #  exp_ixM = exp.(value_ixM ./ prefScale .- vMax_iV);
-
-   #  # For each type: sum over alternatives
-   #  expSum_iV = sum(exp_ixM, dims = 2);
-
-   #  # Prob of each choice
-   #  prob_ixM = exp_ixM ./ expSum_iV;
-
-   #  # Expected value
-   #  eVal_iV = vec(prefScale .* (vMax_iV + log.(expSum_iV)));
-
-   #  if !demeaned
-   #    eVal_iV .+= prefScale * F(EulerConst);
-   #  end
-
-   #  if d.dbg
-   #     @assert isreal(exp_ixM)
-   #     @assert size(exp_ixM) == size(value_ixM)
-   #     @assert size(prob_ixM) == size(value_ixM)
-   #     @assert size(eVal_iV) == (nTypes,)
-   #  end
-
     return prob_ixM, eVal_iV
+end
+
+# Input is a Tuple with Vectors for each type (across all alternatives).
+# Output is a Vector containing a Vector of decision probabilities for each type.
+# test this +++++
+function extreme_value_decision(value_ixV :: NTuple{nTypes, Vector{F}},
+   prefScale :: F;  demeaned :: Bool = true) where {nTypes, F}
+
+   # nx = length(first(value_ixV));
+   prob_ixV = Vector{Vector{F}}(undef, nTypes);
+   eVal_iV = Vector{F}(undef, nTypes);
+   for j = 1 : nTypes
+      prob_ixV[j], eVal_iV[j] = extreme_value_decision_one(value_ixV[j],
+         prefScale; demeaned = demeaned);
+   end
+    return prob_ixV, eVal_iV
+
 end
 
 
@@ -132,15 +122,23 @@ end
 Extreme value decision for one individual.
 
 This is probably not efficient. See efficient implementation for `logsumexp` in `StatsFuns.jl`. But here we also need the scaled exp(valueV) directly for the probabilities.
+
+# Arguments
+- valueV: can be a Vector or a Tuple with a value for each alternative.
 """
-function extreme_value_decision_one(valueV :: AbstractVector{F}, prefScale :: F; 
-   demeaned :: Bool = true) where F <: AbstractFloat
+function extreme_value_decision_one(valueV, prefScale :: F; 
+   demeaned :: Bool = true) where F <: Real
 
    # Decision probability is log(sum(exp(V / prefScale)))
    # This needs to be nicely scaled to avoid overflow
    vMax = maximum(valueV) ./ prefScale .- F(4.0);
+
+   # This uses a loop to ensure that probV is a Vector, even if valueV is a Tuple.
    # The following line is expensive
-   probV = exp.(valueV ./ prefScale .- vMax);
+   probV = zeros(length(valueV));
+   for (j, value) in enumerate(valueV)
+      probV[j] = exp(value / prefScale - vMax);
+   end
 
    # For each type: sum over alternatives
    expSum = sum(probV);
@@ -174,7 +172,7 @@ end
 
 Draw Gumbel shocks, optionally demeaned. Returns vector, even if `sizeV == 1`.
 """
-function draw_gumbel_shocks(rng, prefScale :: F1, sizeV; demeaned :: Bool = true) where F1 <: AbstractFloat
+function draw_gumbel_shocks(rng, prefScale :: F1, sizeV; demeaned :: Bool = true) where F1 <: Real
 
    drawM = prefScale .* rand(rng, Gumbel(zero(F1)),  sizeV...);
    if demeaned

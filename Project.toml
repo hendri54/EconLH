@@ -1,7 +1,7 @@
 name = "EconLH"
 uuid = "e3939c25-9e30-5b59-80eb-f399ae42cd76"
 authors = ["hendri54 <hendricksl@protonmail.com>"]
-version = "0.2"
+version = "0.3"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
@@ -14,6 +14,10 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 julia = "^1.5"
+Distributions = "0.25, 0.26"
+DocStringExtensions = "0.8"
+StatsBase = "0.33, 0.34"
+StatsFuns = "0.9"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

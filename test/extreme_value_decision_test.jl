@@ -85,6 +85,47 @@ function one_option_test()
 end
 
 
+function one_type_test()
+    @testset "One type" begin
+        prefScale = 0.8;
+        nx = 5;
+        valueV = (-0.2, 0.3, 0.9, -1.8, 2.0);
+        @assert length(valueV) == nx;
+        probV, eVal = extreme_value_decision_one(valueV, prefScale; demeaned = true);
+        prob2V, eVal2 = extreme_value_decision_one([valueV...], prefScale; 
+            demeaned = true);
+        @test isapprox(probV, prob2V);
+        @test isapprox(eVal, eVal2);
+    end
+end
+
+
+function many_types_test()
+    @testset "Many types" begin
+        prefScale = 0.8;
+        nx = 3;
+        nTypes = 5;
+        value_ixV = [collect(LinRange(1.0, 2.0, nx) .+ 0.1 * j)  for j = 1 : nTypes];
+
+        # Tuple input
+        valueTuples = (value_ixV..., );
+        prob1_ixV, eVal1_jV = extreme_value_decision(valueTuples, prefScale);
+
+        # Matrix input. Columns are alternative
+        value_ixM = zeros(nTypes, nx);
+        for j = 1 : nTypes
+            value_ixM[j,:] = value_ixV[j];
+        end
+        prob_ixM, eVal_jV = extreme_value_decision(value_ixM, prefScale);
+
+        for j = 1 : nTypes
+            @test isapprox(prob1_ixV[j], prob_ixM[j,:]);
+        end
+        @test isapprox(eVal_jV, eVal1_jV);
+    end
+end
+
+
 function check_by_sim_test()
     @testset "Check by simulation" begin
         for demeaned in [true, false]
@@ -130,6 +171,8 @@ end
 
 @testset "ExtremeValueDecision" begin
     one_option_test();
+    one_type_test();
+    many_types_test();
     check_by_sim_test();
     draw_gumbel_test();
 end
