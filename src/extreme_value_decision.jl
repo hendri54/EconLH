@@ -100,7 +100,6 @@ end
 
 # Input is a Tuple with Vectors for each type (across all alternatives).
 # Output is a Vector containing a Vector of decision probabilities for each type.
-# test this +++++
 function extreme_value_decision(value_ixV :: NTuple{nTypes, Vector{F}},
    prefScale :: F;  demeaned :: Bool = true) where {nTypes, F}
 
@@ -123,36 +122,46 @@ Extreme value decision for one individual.
 
 This is probably not efficient. See efficient implementation for `logsumexp` in `StatsFuns.jl`. But here we also need the scaled exp(valueV) directly for the probabilities.
 
+# Todo
+- Test with `prefScale == 0` +++++
+
 # Arguments
 - valueV: can be a Vector or a Tuple with a value for each alternative.
+- prefScale: scale parameter for preference shocks (Gumbel). May be 0.
 """
 function extreme_value_decision_one(valueV, prefScale :: F; 
    demeaned :: Bool = true) where F <: Real
 
-   # Decision probability is log(sum(exp(V / prefScale)))
-   # This needs to be nicely scaled to avoid overflow
-   vMax = maximum(valueV) ./ prefScale .- F(4.0);
+   if prefScale > zero(F)
+      # Decision probability is log(sum(exp(V / prefScale)))
+      # This needs to be nicely scaled to avoid overflow
+      vMax = maximum(valueV) ./ prefScale .- F(4.0);
 
-   # This uses a loop to ensure that probV is a Vector, even if valueV is a Tuple.
-   # The following line is expensive
-   probV = zeros(length(valueV));
-   for (j, value) in enumerate(valueV)
-      probV[j] = exp(value / prefScale - vMax);
+      # This uses a loop to ensure that probV is a Vector, even if valueV is a Tuple.
+      # The following line is expensive
+      probV = zeros(length(valueV));
+      for (j, value) in enumerate(valueV)
+         probV[j] = exp(value / prefScale - vMax);
+      end
+
+      # For each type: sum over alternatives
+      expSum = sum(probV);
+
+      # Prob of each choice
+      probV ./= expSum;
+
+      # Expected value
+      eVal = prefScale * (vMax + log(expSum));
+
+      if !demeaned
+         eVal += prefScale * F(EulerConst);
+      end
+   else
+      vMax, jMax = findmax(valueV);
+      probV = zeros(F, size(valueV));
+      probV[jMax] = 1.0;
+      eVal = vMax;
    end
-
-   # For each type: sum over alternatives
-   expSum = sum(probV);
-
-   # Prob of each choice
-   probV ./= expSum;
-
-   # Expected value
-   eVal = prefScale * (vMax + log(expSum));
-
-   if !demeaned
-      eVal += prefScale * F(EulerConst);
-   end
-
    return probV, eVal
 end
 
