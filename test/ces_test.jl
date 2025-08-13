@@ -1,4 +1,4 @@
-using EconLH.ProductionFunctionsLH
+using EconLH
 using Random, Test
 # Tests that output is continuous around elasticity 1
 function elast_close_to_one_test()

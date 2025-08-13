@@ -1,4 +1,4 @@
-module ProductionFunctionsLH
+# module ProductionFunctionsLH
 
 using DocStringExtensions
 
@@ -11,4 +11,6 @@ abstract type AbstractProductionFunction{F1<: AbstractFloat} end
 include("cobb_douglas.jl");
 include("ces.jl");
 
-end
+# end
+
+# -------------

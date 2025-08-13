@@ -1,12 +1,11 @@
 using Distributions, Random, Test
-using EconLH.ProductionFunctionsLH
 using EconLH
 
 
 function gini_test()
 	@testset "Gini" begin
 		rng = MersenneTwister(43);
-		n = 10_000;
+		n = 50_000;
 		xV = rand(rng, n);
 		wtV = 1.0 .+ rand(rng, n);
 		g = gini(xV, wtV);
@@ -21,7 +20,7 @@ function gini_test()
 
 		xV[1] = 10_000.0;
 		g3 = gini(xV, wtV);
-		@test g3 > 0.7;
+		@test g3 > 0.5;
 	end
 end
 

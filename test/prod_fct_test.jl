@@ -1,7 +1,7 @@
 using Test
-using EconLH.ProductionFunctionsLH
+using EconLH;
 
-pf = ProductionFunctionsLH;
+pf = EconLH;
 
 function prod_fct_test(fS)
     println(fS)

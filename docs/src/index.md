@@ -18,7 +18,7 @@ draw_gumbel_shocks
 # Production Functions
 
 ```@meta
-CurrentModule = EconLH.ProductionFunctionsLH
+CurrentModule = EconLH
 ```
 
 ```@docs
