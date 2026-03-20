@@ -1,9 +1,10 @@
 name = "EconLH"
 uuid = "e3939c25-9e30-5b59-80eb-f399ae42cd76"
 authors = ["hendri54 <hendricksl@protonmail.com>"]
-version = "2"
+version = "2.1"
 
 [deps]
+ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -13,6 +14,7 @@ StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
+ArgCheck = "2"
 Distributions = "0.25, 0.26"
 DocStringExtensions = "0.8, 0.9"
 StatsBase = "0.33, 0.34"

@@ -46,6 +46,10 @@ end
 	include("prod_fct_test.jl");
 	include("ces_test.jl");
 	include("logistic_test.jl");
+
+	# --- Tests merged from UtilityFunctionsLH ---
+	include("utility_helper_test.jl")
+	include("crra_test.jl")
 end
 
 # ----------
