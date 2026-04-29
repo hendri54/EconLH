@@ -1,7 +1,7 @@
 name = "EconLH"
 uuid = "e3939c25-9e30-5b59-80eb-f399ae42cd76"
 authors = ["hendri54 <hendricksl@protonmail.com>"]
-version = "2.1"
+version = "2.2"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
